@@ -73,6 +73,9 @@
         <option value="S3Dropbox"<?php echo ($filesystem == 'S3Dropbox') ? ' selected="selected"' : '' ?>>Amazon S3 + Dropbox</option>
         <option value="Local"<?php echo ($filesystem == 'Local') ? ' selected="selected"' : '' ?>>Local filesystem</option>
         <option value="LocalDropbox"<?php echo ($filesystem == 'LocalDropbox') ? ' selected="selected"' : '' ?>>Local filesystem + Dropbox</option>
+        <?php if(isset($gitAnnexisHere) && $gitAnnexisHere == 0){ ?>
+        <option value="LocalGitAnnex"<?php echo ($filesystem == 'GitAnnex') ? ' selected="selected"' : '' ?>>Git-annex repository</option>
+        <?php }?>
       </select>
 
       <div class="btn-toolbar">
@@ -142,6 +145,15 @@
         <input type="hidden" name="dropboxToken" value="<?php $this->utility->safe($dropboxToken); ?>">
         <input type="hidden" name="dropboxTokenSecret" value="<?php $this->utility->safe($dropboxTokenSecret); ?>">
         <input type="hidden" name="dropboxFolder" value="<?php $this->utility->safe($dropboxFolder); ?>">
+      <?php } ?>
+      <?php if(isset($usesGitAnnex) && !empty($usesGitAnnex)) { ?>
+        <h3>Enter your Git-annex credentials</h3>
+        <label for="gitAnnexRepoName">Name to give your git-annex Repository</label>
+        <input type="text" name="gitAnnexRepoName" id="gitAnnexRepoName" placeholder="Name of your git-annex repository" size="50" autocomplete="off" data-validation="required" value="<?php echo $gitAnnexRepoName; ?>">
+
+        <label for="gitAnnexRepoPath">Path to the git-annex repository<em>(make sure this repository already exists)</em></label>
+        <input type="text" name="gitAnnexRepoPath" placeholder="Path to your git-annex repository" id="gitAnnexRepoPath" size="50" autocomplete="off" data-validation="required" value="<?php echo $gitAnnexRepoPath; ?>">
+
       <?php } ?>
       <div class="btn-toolbar">
         <?php if(isset($_GET['edit'])) { ?><a class="btn" href="/">Cancel</a><?php } ?>

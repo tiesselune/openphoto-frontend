@@ -37,13 +37,17 @@ class SetupController extends BaseController
     getSession('step', 1);
 
     $imageLibs = array();
+    $gitAnnexisHere = 1;
+    $gitAnnexOutput = Array();
     if(class_exists('Imagick'))
       $imageLibs['ImageMagick'] = 'ImageMagick';
     if(class_exists('Gmagick'))
       $imageLibs['GraphicsMagick'] = 'GraphicsMagick';
     if(extension_loaded('gd') && function_exists('gd_info'))
       $imageLibs['GD'] = 'GD';
-
+      
+    // Checks installation of git and git-annex
+    exec('git annex version', $gitAnnexOutput, $gitAnnexisHere);
     $imageLibrary = '';
     if(getConfig()->get('modules') != null)
       $imageLibrary = getConfig()->get('modules')->image;
@@ -77,7 +81,7 @@ class SetupController extends BaseController
 
     $template = sprintf('%s/setup.php', getConfig()->get('paths')->templates);
     $body = $this->template->get($template, array('filesystem' => $filesystem, 'database' => $database, 'themes' => $themes, 'theme' => $theme,
-      'imageLibs' => $imageLibs, 'imageLibrary' => $imageLibrary, 'appId' => $appId, 'step' => $step, 'email' => $email, 'password' => '', 'qs' => $qs, 'errors' => $errors));
+      '' => $imageLibs, 'imageLibrary' => $imageLibrary, 'gitAnnexisHere' => $gitAnnexisHere, 'appId' => $appId, 'step' => $step, 'email' => $email, 'password' => '', 'qs' => $qs, 'errors' => $errors));
     $this->theme->display('template.php', array('body' => $body, 'page' => 'setup'));
   }
 
@@ -226,12 +230,17 @@ class SetupController extends BaseController
 
     $step = 2;
     $imageLibs = array();
+    $gitAnnexisHere = 1;
+    $gitAnnexOutput = Array();
     if(class_exists('Imagick'))
       $imageLibs['ImageMagick'] = 'ImageMagick';
     if(class_exists('Gmagick'))
       $imageLibs['GraphicsMagick'] = 'GraphicsMagick';
     if(extension_loaded('gd') && function_exists('gd_info'))
       $imageLibs['GD'] = 'GD';
+      
+    // Checks installation of git and git-annex
+    exec('git annex version',$gitAnnexOutput, $gitAnnexisHere);
 
     $imageLibrary = '';
     if(getConfig()->get('modules') != null)
@@ -250,7 +259,7 @@ class SetupController extends BaseController
       $qs = '?edit';
 
     $template = sprintf('%s/setup.php', getConfig()->get('paths')->templates);
-    $body = $this->template->get($template, array('themes' => array(), 'imageLibs' => $imageLibs, 'appId' => 'openphoto-frontend', 'imageLibrary' => $imageLibrary, 'database' => $database, 'filesystem' => $filesystem, 'qs' => $qs, 'step' => $step));
+    $body = $this->template->get($template, array('themes' => array(), 'imageLibs' => $imageLibs, 'gitAnnexisHere' => $gitAnnexisHere, 'appId' => 'openphoto-frontend', 'imageLibrary' => $imageLibrary, 'database' => $database, 'filesystem' => $filesystem, 'qs' => $qs, 'step' => $step));
     $this->theme->display('template.php', array('body' => $body, 'page' => 'setup'));
   }
 
@@ -304,6 +313,7 @@ class SetupController extends BaseController
     $usesS3 = (stristr(getSession()->get('fileSystem'), 'S3') !== false) ? true : false;
     $usesDropbox = (stristr(getSession()->get('fileSystem'), 'Dropbox') !== false) ? true : false;
     $usesSimpleDb = (getSession()->get('database') == 'SimpleDb') ? true : false;
+    $usesGitAnnex = (stristr(getSession()->get('fileSystem'), 'GitAnnex') !== false) ? true : false;
 
     $dropboxKey = getSession()->get('dropboxKey');
     if(!empty($dropboxKey))
@@ -365,6 +375,13 @@ class SetupController extends BaseController
     {
       $dropboxFolder = getConfig()->get('dropbox')->dropboxFolder;
     }
+    
+    if(getConfig()->get('gitannex') != null)
+    {
+      $gitannex = getConfig()->get('gitannex');
+      $gitAnnexRepoName = $gitannex->gitAnnexRepoName;
+      $gitAnnexRepoPath = $gitannex->gitAnnexRepoPath;
+    }
 
     $qs = '';
     if(isset($_GET['edit']))
@@ -378,7 +395,9 @@ class SetupController extends BaseController
       'simpleDbDomain' => $simpleDbDomain, 'mySqlHost' => $mySqlHost, 'mySqlUser' => $mySqlUser, 'mySqlDb' => $mySqlDb,
       'mySqlPassword' => $mySqlPassword, 'mySqlTablePrefix' => $mySqlTablePrefix, 'fsRoot' => $fsRoot, 'fsHost' => $fsHost,
       'usesDropbox' => $usesDropbox, 'dropboxKey' => $dropboxKey, 'dropboxSecret' => $dropboxSecret, 'dropboxToken' => $dropboxToken,
-      'dropboxTokenSecret' => $dropboxTokenSecret, 'dropboxFolder' => $dropboxFolder, 'qs' => $qs, 'appId' => $appId, 'errors' => $errors));
+      'dropboxTokenSecret' => $dropboxTokenSecret, 'dropboxFolder' => $dropboxFolder, 
+	  'usesGitAnnex' => $usesGitAnnex, 'gitAnnexRepoName' => $gitAnnexRepoName, 'gitAnnexRepoPath' => $gitAnnexRepoPath,
+      'qs' => $qs, 'appId' => $appId, 'errors' => $errors));
 
     $this->theme->display('template.php', array('body' => $body, 'page' => 'setup'));
   }
@@ -405,6 +424,7 @@ class SetupController extends BaseController
     $usesLocalFs = (stristr(getSession()->get('fileSystem'), 'Local') !== false) ? true : false;
     $usesS3 = (stristr(getSession()->get('fileSystem'), 'S3') !== false) ? true : false;
     $usesDropbox = (stristr(getSession()->get('fileSystem'), 'Dropbox') !== false) ? true : false;
+    $usesGitAnnex = (stristr(getSession()->get('fileSystem'), 'GitAnnex') !== false) ? true : false;
     $awsErrors = false;
     $mySqlErrors = false;
     $localFsErrors = false;
@@ -452,6 +472,7 @@ class SetupController extends BaseController
       );
       $mySqlErrors = getForm()->hasErrors($input);
     }
+    
 
     if($usesLocalFs)
     {
@@ -473,8 +494,19 @@ class SetupController extends BaseController
       $dropboxTokenSecret = $_POST['dropboxTokenSecret'];
       $dropboxFolder = $_POST['dropboxFolder'];
     }
+    if($usesMySql)
+    {
+      $gitAnnexRepoName = $_POST['gitAnnexRepoName'];
+      $gitAnnexRepoPath = $_POST['gitAnnexRepoPath'];
+      $input = array(
+        array('GitAnnex Repository Name', $gitAnnexRepoName, 'required'),
+        array('GitAnnex Repository', $gitAnnexRepoPath, 'required')
+      );
+      $gitAnnexErrors = getForm()->hasErrors($input);
+    }
+    
 
-    if($awsErrors === false && $mySqlErrors === false && $localFsErrors === false)
+    if($awsErrors === false && $mySqlErrors === false && $localFsErrors === false && $gitAnnexErrors === false)
     {
       $credentials = new stdClass;
       if($usesAws)
@@ -535,6 +567,14 @@ class SetupController extends BaseController
         $dropbox = new stdClass;
         $dropbox->dropboxFolder = $dropboxFolder;
       }
+      if($usesGitAnnex)
+      {
+        getSession()->set('gitAnnexRepoName', $gitAnnexRepoName);
+        getSession()->set('gitAnnexRepoPath', $gitAnnexRepoPath);
+        $gitannex = new stdClass;
+        $gitannex->gitAnnexRepoName = $gitAnnexRepoName;
+        $gitannex->gitAnnexRepoPath = $gitAnnexRepoPath;
+      }
 
       $systems = new stdClass;
       $systems->database = getSession()->get('database');
@@ -555,6 +595,8 @@ class SetupController extends BaseController
         getConfig()->set('localfs', $fs);
       if($usesDropbox)
         getConfig()->set('dropbox', $dropbox);
+      if($usesGitAnnex)
+        getConfig()->set('gitannex', $gitannex);
       getConfig()->set('systems', $systems);
       getConfig()->set('secrets', $secrets);
       getConfig()->set('user', $user);
@@ -569,6 +611,8 @@ class SetupController extends BaseController
           $fsErrors[] = 'We were unable to initialize your S3 bucket.<ul><li>Make sure you\'re <a href="http://aws.amazon.com/s3/">signed up for AWS S3</a>.</li><li>Double check your AWS credentials.</li><li>S3 bucket names are globally unique, make sure yours isn\'t already in use by someone else.</li><li>S3 bucket names can\'t have certain special characters. Try using just alpha-numeric characters and periods.</li></ul>';
         else if($usesLocalFs)
           $fsErrors[] = "We were unable to set up your local file system using <em>{$fsObj->getRoot()}</em>. Make sure that the following user has proper permissions ({$serverUser}).";
+        else if($usesGitAnnex)
+          $fsErrors[] = "We were unable to set up your Git-annex Repository. Make sure Git-annex is installed properly and that your repository is set with the right permissions ";
         else
           $fsErrors[] = 'An unknown error occurred while setting up your file system. Check your error logs to see if there\'s more information about the error.';
       }
@@ -606,6 +650,7 @@ class SetupController extends BaseController
         $writeError = $this->writeConfigFile();
         if($writeErrors === false)
         {
+
           if(isset($_GET['edit']))
           {
             $this->route->redirect('/?m=welcome');
@@ -623,7 +668,7 @@ class SetupController extends BaseController
         }
       }
     }
-
+    
     // combine all errors if they exist
     $errors = array();
     if(is_array($awsErrors))
@@ -632,6 +677,8 @@ class SetupController extends BaseController
       $errors = array_merge($errors, $mySqlErrors);
     if(is_array($localFsErrors))
       $errors = array_merge($errors, $localFsErrors);
+    if(is_array($gitAnnexErrors))
+      $errors = array_merge($errors, $gitAnnexErrors);
     if(is_array($fsErrors))
       $errors = array_merge($errors, $fsErrors);
     if(is_array($dbErrors))
@@ -651,7 +698,9 @@ class SetupController extends BaseController
       'simpleDbDomain' => $simpleDbDomain, 'mySqlHost' => $mySqlHost, 'mySqlUser' => $mySqlUser, 'mySqlDb' => $mySqlDb,
       'mySqlPassword' => $mySqlPassword, 'mySqlTablePrefix' => $mySqlTablePrefix, 'fsRoot' => $fsRoot, 'fsHost' => $fsHost,
       'usesDropbox' => $usesDropbox, 'dropboxKey' => $dropboxKey, 'dropboxSecret' => $dropboxSecret, 'dropboxToken' => $dropboxToken,
-      'dropboxTokenSecret' => $dropboxTokenSecret, 'dropboxFolder' => $dropboxFolder, 'qs' => $qs, 'appId' => $appId, 'errors' => $errors));
+      'dropboxTokenSecret' => $dropboxTokenSecret, 'dropboxFolder' => $dropboxFolder,'usesGitAnnex' => $usesGitAnnex,
+      'usesGitAnnex' => $usesGitAnnex, 'gitAnnexRepoPath' => $gitAnnexRepoPath,
+      'gitAnnexRepoName' => $gitAnnexRepoName,'qs' => $qs, 'appId' => $appId, 'errors' => $errors));
     $this->theme->display('template.php', array('body' => $body, 'page' => 'setup'));
   }
 
@@ -690,7 +739,8 @@ class SetupController extends BaseController
     return array('themes' => array(), 'awsKey' => '', 'awsSecret' => '', 's3Bucket' => '', 'simpleDbDomain' => '', 'mySqlHost' => '',
       'mySqlUser' => '', 'mySqlPassword' => '', 'mySqlDb' => '', 'mySqlTablePrefix' => '',
       'fsRoot' => '', 'fsHost' => '', 'dropboxFolder' => '', 'dropboxKey' => '', 'dropboxSecret' => '',
-      'dropboxKey' => '', 'dropboxToken' => '', 'dropboxTokenSecret' => '', 'errors' => '');
+      'dropboxKey' => '', 'dropboxToken' => '', 'dropboxTokenSecret' => '',
+      'gitAnnexRepoName' => '', 'gitAnnexRepoPath' => '', 'errors' => '');
   }
 
   /**
@@ -793,6 +843,8 @@ class SetupController extends BaseController
       '{dropboxToken}' => "",
       '{dropboxTokenSecret}' => "",
       '{dropboxFolder}' => "",
+      '{gitAnnexRepoName}' => "",
+      '{gitAnnexRepoPath}' => "",
       '{fsRoot}' => "",
       '{fsHost}' => "",
       '{lastCodeVersion}' => getConfig()->get('defaults')->currentCodeVersion,

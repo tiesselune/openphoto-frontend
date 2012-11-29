@@ -126,7 +126,7 @@ function getFs(/*$type*/)
   switch($type)
   {
     case 'Local':
-      $filesystem = new FileSystemLocalGitAnnex();
+      $filesystem = new FileSystemLocal();
       break;
     case 'LocalDropbox':
       $filesystem = new FileSystemLocalDropbox();
@@ -136,6 +136,9 @@ function getFs(/*$type*/)
       break;
     case 'S3Dropbox':
       $filesystem = new FileSystemS3Dropbox();
+      break;
+    case 'LocalGitAnnex':
+      $filesystem = new FileSystemLocalGitAnnex();
       break;
   }
 
