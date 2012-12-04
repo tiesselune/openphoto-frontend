@@ -53,6 +53,7 @@ $routeObj->post('/photo/([a-zA-Z0-9]+)/update', array('PhotoController', 'update
 $routeObj->post('/photo/upload', array('PhotoController', 'uploadPost')); // upload a photo
 $routeObj->get('/photos/upload', array('PhotoController', 'upload')); // view the upload photo form
 $routeObj->get('/photos/?(.+)?/list', array('PhotoController', 'list_')); // view all photos / optionally filter (/photos[/{options})]/list
+$routeObj->get('/photos/(.+\\.jpg)', array('PhotoController', 'get'));
 
 /*
  * Resource mapping endpoints

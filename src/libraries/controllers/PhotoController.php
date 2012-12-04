@@ -17,7 +17,18 @@ class PhotoController extends BaseController
     $this->photo = new Photo;
   }
 
-  
+  public function get($path) {
+    $file = $this->config->paths->photos . '/' . $path;
+    if (file_exists($file)) {
+      header('Content-Type: image/jpeg');
+      readfile($file);
+    } else {
+      getLogger()->warn("Photo $file doesn't exist");
+      $this->route->run('/error/404');
+    }
+  }
+
+
   /**
     * Create a new version of the photo with ID $id as specified by $width, $height and $options.
     *
