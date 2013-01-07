@@ -25,25 +25,65 @@ class FileSystemLocalGitAnnex extends FileSystemLocal implements FileSystemInter
 
   public function deletePhoto($photo)
   {
-
+/*
     foreach($photo as $key => $value)
-    {
-      if(strncmp($key, 'path', 4) === 0) {
-        $remoteFile = $value;
-        $path = self::normalizePath($value);
-
-        if(strpos($remoteFile, '/original/') !== false) {
-          $output = Array();
-     	  $status = 1;
-          getLogger()->info("Removing $remoteFile from git-annex");
-          exec(sprintf('cd %1$s && git annex drop --force %2$s && git rm %2$s', $this->repo, $remoteFile), $output, $status);
-          $status = 1;
-          unset($output);
-          exec(sprintf('cd %s && git commit -m \'Delete %s\'', $this->repo, $path), $output, $status);
-        }
-      }
-    }
+	{
+	    if(strncmp($key, 'path', 4) === 0) {
+		    $remoteFile = $value;
+		    $path = self::normalizePath($value);
+		    
+		    if(strpos($remoteFile, '/original/') !== false) {
+			    $output = Array();
+			    $status = 1;
+			    getLogger()->info("Removing $remoteFile from git-annex");
+			    exec(sprintf('cd %1$s ; git annex drop --force %2$s ',$this->repo, $path),$output, $status);
+			    if(file_exists($path)){
+				    return false;
+			    }
+			    $status = 1;
+			    unset($output);
+			    exec("cd $this->repo && git commit -m \'Delete $path\'", $output, $status);
+			    if($status != 0){
+				    return false;
+			    }
+		    }
+		    else      
+		    {
+			    if(strncmp($key, 'path', 4) === 0) {
+				    $path = self::normalizePath($value);
+				    if(file_exists($path) && !@unlink($path))
+					    return false;
+			    }
+		    }
+	    }
+	    
+	}
     return true;
+    */
+	  $output = Array();
+	  $status1 = 1;
+	  $status2 = 1;
+	  $status3 = 1;
+	  $status4 = 1;
+	  foreach($photo as $key => $value)
+	  {
+		  if(strncmp($key, 'path', 4) === 0) {
+			  $path = self::normalizePath($value);
+			  if(strpos($value, '/original/') !== false){
+				  exec("cd $this->repo && git annex drop --force $path",$output, $status1);
+				  exec("cd $this->repo && git rm $path",$output, $status2);
+				  exec(sprintf('cd %s$1 && git commit -m "Deleted %s$2"',$this->repo,$path),$output, $status3);
+				  
+				  if( $status1 != 0 || $status2 != 0 || $status3 != 0 )
+					  return false;
+			  }
+			  else{
+				  if(file_exists($path) && !@unlink($path))
+					  return false;
+			  }
+		  }
+	  }
+	  return true;
   }
 
   public function downloadPhoto($photo)
@@ -178,7 +218,7 @@ class FileSystemLocalGitAnnex extends FileSystemLocal implements FileSystemInter
   {
   	if(strpos($path, '/original/') !== false)
   	{
-  		return $this->repo .$path;
+  		return $this->repo . $path;
   	} 
   	return $this->root . $path;
   }
