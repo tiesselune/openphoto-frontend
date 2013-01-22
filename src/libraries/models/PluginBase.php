@@ -57,6 +57,8 @@ class PluginBase extends BaseModel
 
   public function onPhotoDownload() {}
 
+  public function onPhotoDeleted() {}
+
   public function renderHead() { }
 
   public function renderBody() { }

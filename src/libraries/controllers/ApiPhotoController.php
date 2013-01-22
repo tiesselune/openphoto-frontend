@@ -34,6 +34,9 @@ class ApiPhotoController extends ApiBaseController
     $status = $this->photo->delete($id);
     if($status)
     {
+      $this->plugin->setData('photo', $res['result']);
+      $this->plugin->invoke('onPhotoDeleted');
+
       $this->tag->updateTagCounts($res['result']['tags'], array(), 1, 1);
       return $this->noContent('Photo deleted successfully', true);
     }
