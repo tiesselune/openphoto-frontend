@@ -15,7 +15,7 @@ if ($status != 0){
 }
 unset($output);
 $status = 1;
-exec("cd $path; git init; git commit -m 'Initial git commit' --allow-empty; git annex init open-photo; git branch photoView; git branch albumView; git branch userView; git checkout photoView",$output,$status);
+exec("cd $path; git config --global user.name 'openPhoto';git config --global user.email 'photo@openphoto.com'; git init; git commit -m 'Initial git commit' --allow-empty; git annex init open-photo; git branch photoView; git branch albumView; git checkout photoView",$output,$status);
 if($status != 0){
 	echo "Initialization failed.\n Please make sure git and git-annex are installed and run git-annex-setup again.\n";
 	exit;
@@ -25,7 +25,7 @@ else{
 }
 unset($output);
 $status = 1;
-exec("chown www-data $path", $output, $status);
+exec("chown www-data:www-data $path", $output, $status);
 if($status != 0){
 	echo "www-data could not be set to be the owner.\nPlease check apache is installed.\n";
 	exit;
