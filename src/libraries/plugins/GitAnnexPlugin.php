@@ -38,6 +38,10 @@ class GitAnnexPlugin extends PluginBase
     $this->annex->rm($photo);
   }
 
+  public function onDeactivate() {
+    $this->annex->uninit();
+  }
+
   private function getPhotoPath()
   {
     $host = $this->config->localfs->fsHost;
