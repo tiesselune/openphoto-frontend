@@ -17,6 +17,21 @@ class GitAnnexPlugin extends PluginBase
       'user.email' => $this->config->user->email,
     );
     $this->annex = new GitAnnex($repoPath, $config);
+
+    $pluginDir = sprintf('%s/plugins', $this->config->paths->userdata);
+    if (!is_dir($pluginDir)) {
+      mkdir($pluginDir);
+    }
+    $pluginInitFile = sprintf('%s/%s.%s.init', $pluginDir, $_SERVER['HTTP_HOST'], 'GitAnnex');
+    if (!is_file($pluginInitFile)) {
+      touch($pluginInitFile);
+      $this->init();
+    }
+  }
+
+  private function init()
+  {
+    
   }
 
   public function onPhotoUploaded()
