@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
-include 'credentials.php';
-include 'OpenPhotoOAuth.php';
+include 'open-photo-hook/credentials.php';
+include 'open-photo-hook/OpenPhotoOAuth.php';
 $output = Array();
 $status = 1;
 $output2 = Array();
@@ -22,25 +22,40 @@ function getName($path){
 	$name = stripcslashes($name);
 	return $name;
 }
+echo $repo;
+echo "\n";
+exec("cd $repo; pwd;",$output2, $status2);
+unset($GIT_DIR);
+echo "$output2[0]\n";
 
-exec("cd $repo; git diff-tree --name-status -r -z photoView master", $output, $status);
-if($status == 0){
+exec("cd $repo; unset GIT_DIR; git diff-tree --name-status -r -z master synced/master", $output, $status);
+echo "here\n";
+if($status == 0 && (count($output) != 0)){
 	$matches = preg_split('/\0/', $output[0]);
 	for($i = 0, $size = count($matches) - 2; $i < $size; ++$i) {
 		$mode = $matches[$i];
 		++$i;
 		$linkName = $matches[$i];
 		$linkNameSh = normalizePath($linkName);
-		exec("cd $repo; git checkout master $linkNameSh; git annex get $linkNameSh", $output2,$status2);
+		exec("cd $repo; unset GIT_DIR; git checkout synced/master $linkNameSh; git annex get $linkNameSh", $output2,$status2);
+		echo "here2\n";
 		$linkPath = sprintf('%1$s/%2$s',$repo,$linkName);
 		$photoPath = sprintf('%1$s/%2$s',$repo,file_get_contents($linkPath));
-		$photoBase64Encoded = base64_encode(file_get_contents($photoPath));
-		$response = $client->post("/photo/upload.json", array('photo' => $photoBase64Encoded, 
+		
+		if($mode == 'A'){
+		
+		$response = $client->post("/photo/upload.json", array('photo' => "@$photoPath", 
+			'permission' => urlencode('1'),
 			'title' => getName($linkNameSh),
-			'permission' => "1",
-			'tags' => "git-annex",
-			'appId' => "Git-annex" ));
-		exec("cd $repo; rm $linkNameSh;", $output2,$status2);
+			'tags' => "git-annex"));
+		exec("cd $repo; unset GIT_DIR; git branch -f master synced/master", $output2, $status2);
+		}
+		
+		if($mode == 'D'){
+		//TODO delete
+		}
+		
+		exec("cd $repo; unset GIT_DIR; git rm $linkNameSh;", $output2,$status2);
 		echo "\n";
 		echo $response;
 		echo "\n";
