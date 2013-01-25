@@ -52,8 +52,8 @@ class GitAnnex
 	}
 
 	public function uninit()
-	{
-		if (!$this->run('touch foo && ln foo bar')) { // hard links are disable so "git annex uninit" won't work
+	{	// commented out all that to replace it with "Unlock". Still has to prove its efficiency.
+		/*if (!$this->run('touch foo && ln foo bar')) { // hard links are disable so "git annex uninit" won't work
 			// the following is a hack to achieve what "git annex uninit" does
 			$tmpRepo = sys_get_temp_dir() . '/' . uniqid('git-annex-');
 			mkdir($tmpRepo);
@@ -76,9 +76,13 @@ class GitAnnex
 			
 			return true;
 		}
-
+		*/
 		if (!$this->run('git annex get .')) {
 			throw new \RuntimeException('Couldn\'t retrieve the content of all annexed files. Abort.');
+		}
+		
+		if (!$this->run('git annex unlock ./*')) {
+			throw new \RuntimeException('Couldn\'t replace content of all symlinks with their actual content. Abort.');
 		}
 		
 		if (!$this->run('git annex uninit')) {
