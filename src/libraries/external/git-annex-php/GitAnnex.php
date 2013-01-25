@@ -25,6 +25,11 @@ class GitAnnex
 			$this->run(sprintf('git config %s "%s"', $key, $value));
 		}
 	}
+	
+	public function branch($branchName)
+	{
+		$this->run("git branch $branchName");
+	}
 
 	public function add($file)
 	{
