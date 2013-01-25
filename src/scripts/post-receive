@@ -1,5 +1,10 @@
 #!/usr/bin/php
 <?php
+/**
+ * Git-annex open-photo hook.
+ *
+ * @author Julien SOSTHENE <juliensos10@gmail.com>
+ */
 include 'open-photo-hook/credentials.php';
 include 'open-photo-hook/OpenPhotoOAuth.php';
 
@@ -31,21 +36,26 @@ exec("cd $repo; unset GIT_DIR; git diff-tree --name-status -r -z master synced/m
 
 //actually treats the files to upload on openPhoto.
 if($status == 0 && (count($output) != 0)){
+
 	//get separate items from output.
 	$matches = preg_split('/\0/', $output[0]);
 	for($i = 0, $size = count($matches) - 2; $i < $size; ++$i) {
+	
 		//get git action: A for add, M for modified, D for delete and so on.
 		$mode = $matches[$i];
 		++$i;
+		
 		//get the path of the file in git repo.
 		$linkName = $matches[$i];
 		$linkNameSh = normalizePath($linkName);
+		
 		// get the file from the master branch.
 		exec("cd $repo; unset GIT_DIR; git checkout synced/master $linkNameSh; git annex get $linkNameSh", $output2,$status2);
 		if ($status2 != 0){
 			// Display in sync or push process if photo could not be got by git annex get.
 			echo "Photo $linkName is unavailable. Could not do anything.";
 		}
+		
 		$linkPath = sprintf('%1$s/%2$s',$repo,$linkName);
 		$photoPath = sprintf('%1$s/%2$s',$repo,file_get_contents($linkPath));
 		
@@ -56,6 +66,7 @@ if($status == 0 && (count($output) != 0)){
 				'permission' => urlencode('1'),
 				'title' => getName($linkNameSh),
 				'tags' => "git-annex"));
+				
 			// update branch master so that this photo is not considered new on the next sync. (staight-forward)
 			exec("cd $repo; unset GIT_DIR; git branch -f master synced/master", $output2, $status2);
 		}
@@ -71,6 +82,7 @@ if($status == 0 && (count($output) != 0)){
 		if($mode == 'R'){
 		//TODO rename
 		}
+		
 		// delete the file that was copied from master, and added by git-annex get.
 		exec("cd $repo; unset GIT_DIR; git rm $linkNameSh;", $output2,$status2);
 
