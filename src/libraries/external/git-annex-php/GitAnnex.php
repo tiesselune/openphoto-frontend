@@ -10,7 +10,10 @@ class GitAnnex
 
 	public function __construct($repoPath, $config = array())
 	{
-		$this->repoPath = $repoPath;
+		$this->repoPath = realpath($repoPath);
+		if (!is_dir($this->repoPath)) {
+			throw new \RuntimeException(sprintf('"%s" is not a directory.', $repoPath));
+		}
 		$this->config = $config;
 	}
 
@@ -48,6 +51,45 @@ class GitAnnex
 		$this->commit(sprintf('Remove %s', $file));
 	}
 
+	public function uninit()
+	{
+		if (!$this->run('touch foo && ln foo bar')) { // hard links are disable so "git annex uninit" won't work
+			// the following is a hack to achieve what "git annex uninit" does
+			$tmpRepo = sys_get_temp_dir() . '/' . uniqid('git-annex-');
+			mkdir($tmpRepo);
+			
+			if (!is_dir($tmpRepo)) {
+				throw new \RuntimeException('Couldn\'t create temporary directory. Abort.');
+			}
+
+			$this->run('rm -rf .git');
+			
+			if (!$this->run("cp -RL * $tmpRepo")) {
+				throw new \RuntimeException('Copy of repo failed. Abort.');
+			}
+			
+			if (!$this->run("mv $this->repoPath {$this->repoPath}.bak && mv $tmpRepo $this->repoPath")) {
+				throw new \RuntimeException('Switch of original repo and copy failed. Abort.');
+			}
+			
+			$this->run("rm {$this->repoPath}.bak");
+			
+			return true;
+		}
+
+		if (!$this->run('git annex get .')) {
+			throw new \RuntimeException('Couldn\'t retrieve the content of all annexed files. Abort.');
+		}
+		
+		if (!$this->run('git annex uninit')) {
+			throw new \RuntimeException('Command "git annex uninit" failed. Abort.');
+		}
+		
+		$this->run('rm -rf .git');
+
+		return true;
+	}
+
 	private function commit($message)
 	{
 		$this->run(sprintf('git commit -m \'%s\'', str_replace("'", "\\'", $message)));
@@ -64,7 +106,9 @@ class GitAnnex
 			$this->log("ERROR:");
 			$this->log($process->getErrorOutput());
 		}
+		$this->log("RETURN:\n" . var_export($process->isSuccessful(), true));
 		$this->log();
+		return $process->isSuccessful();
 	}
 
 	private function log($string = '') {
