@@ -37,6 +37,7 @@ SQL;
     `appId` varchar(255) NOT NULL,
     `type` varchar(32) NOT NULL,
     `data` text NOT NULL,
+    `permission` int(11) DEFAULT NULL,
     `visible` int(11) DEFAULT NULL,
     `dateCreated` int(10) unsigned NOT NULL,
     PRIMARY KEY (`id`,`owner`)
