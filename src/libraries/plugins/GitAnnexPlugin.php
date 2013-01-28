@@ -7,11 +7,17 @@
 class GitAnnexPlugin extends PluginBase
 {
   private $annex;
+  private $pluginInitFile;
 
   public function __construct()
   {
     parent::__construct();
     $repoPath = $this->config->localfs->fsRoot . '/original';
+    
+    if (!is_dir($repoPath)) {
+      mkdir($repoPath);
+    }
+    
     $config = array(
       'user.name' => 'OpenPhoto',
       'user.email' => $this->config->user->email
@@ -22,7 +28,7 @@ class GitAnnexPlugin extends PluginBase
     if (!is_dir($pluginDir)) {
       mkdir($pluginDir);
     }
-    $pluginInitFile = sprintf('%s/%s.%s.init', $pluginDir, $_SERVER['HTTP_HOST'], 'GitAnnex');
+    $this->pluginInitFile = sprintf('%s/%s.%s.init', $pluginDir, $_SERVER['HTTP_HOST'], 'GitAnnex');
     if (!is_file($pluginInitFile)) {
       touch($pluginInitFile);
       $this->init($repoPath);
@@ -68,7 +74,6 @@ class GitAnnexPlugin extends PluginBase
     }
     
     
-    
   }
 
   public function onPhotoUploaded()
@@ -94,6 +99,7 @@ class GitAnnexPlugin extends PluginBase
 
   public function onDeactivate() {
     $this->annex->uninit();
+    unlink($this->pluginInitFile);
   }
 
   private function getPhotoPath()

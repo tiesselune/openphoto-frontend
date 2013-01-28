@@ -20,10 +20,11 @@ class GitAnnex
 	public function init()
 	{
 		$this->run('git init');
-		$this->run('git annex init');
+		$this->run('git annex init open-photo');
 		foreach ($this->config as $key => $value) {
 			$this->run(sprintf('git config %s "%s"', $key, $value));
 		}
+		$this->run('git commit -m "Initial git commit" --allow-empty');
 	}
 	
 	public function branch($branchName)
@@ -48,7 +49,7 @@ class GitAnnex
 		$this->commit(sprintf('Add %s', $file));
 	}
 	
-	public funtion addToBranch($photo,$branch)
+	public function addToBranch($photo,$branch)
 	{
 		$this->run(sprintf('git reset %s', $branch));
 		$this->run(sprintf('git annex add %s',$photo));
@@ -75,7 +76,7 @@ class GitAnnex
 		$this->commit(sprintf('Remove %s', $file));
 	}
 	
-	public funtion rmFromBranch($photo,$branch)
+	public function rmFromBranch($photo,$branch)
 	{
 		$this->run(sprintf('git reset %s', $branch));
 		$this->run(sprintf('git rm %s',$photo));
@@ -123,7 +124,6 @@ class GitAnnex
 		}
 		
 		$this->run('rm -rf .git');
-
 		return true;
 	}
 
