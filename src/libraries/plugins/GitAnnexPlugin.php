@@ -72,6 +72,7 @@ class GitAnnexPlugin extends PluginBase
     {
     	throw new \RuntimeException('Couldn\'t copy OpenPhotoOAuth.php from external/git-annex-php/openphoto-hook');
     }
+    
     $consumerKey = getCredential()->add('Git-annex', array('read','write','delete'));
     getCredential()->convertToken($consumerKey, Credential::typeAccess);
     $credentialsFile = fopen($gitHooksAddDir . '/credentials.php', 'w');
