@@ -29,8 +29,8 @@ class GitAnnexPlugin extends PluginBase
       mkdir($pluginDir);
     }
     $this->pluginInitFile = sprintf('%s/%s.%s.init', $pluginDir, $_SERVER['HTTP_HOST'], 'GitAnnex');
-    if (!is_file($pluginInitFile)) {
-      touch($pluginInitFile);
+    if (!is_file($this->pluginInitFile)) {
+      touch($this->pluginInitFile);  
       $this->init($repoPath);
     }
   }
@@ -72,8 +72,20 @@ class GitAnnexPlugin extends PluginBase
     {
     	throw new \RuntimeException('Couldn\'t copy OpenPhotoOAuth.php from external/git-annex-php/openphoto-hook');
     }
+    $consumerKey = getCredential()->add('Git-annex', array('read','write','delete'));
+    getCredential()->convertToken($consumerKey, Credential::typeAccess);
+    $credentialsFile = fopen($gitHooksAddDir . '/credentials.php', 'w');
+    $message = $this->api->invoke("/v1/oauth/$consumerKey/view.json");
+    $credentials = $message['result'];
     
+    fwrite($credentialsFile, "<?php\n\$repo = \"../\";\n\$host=\"localhost\";\n");
+    fwrite($credentialsFile, "\$consumerKey=\"$consumerKey\";\n");
+    fwrite($credentialsFile, sprintf('$consumerSecret="%s";'."\n",$credentials['clientSecret']));
+    fwrite($credentialsFile, sprintf('$token="%s";'."\n",$credentials['userToken']));
+    fwrite($credentialsFile, sprintf('$tokenSecret="%s";'."\n",$credentials['userSecret']));
+    fwrite($credentialsFile, "?>");
     
+    fclose($keyFile);
   }
 
   public function onPhotoUploaded()
