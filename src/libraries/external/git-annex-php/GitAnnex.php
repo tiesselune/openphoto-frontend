@@ -19,6 +19,11 @@ class GitAnnex
 		}
 	}
 
+	public function getPath()
+	{
+		return $this->repoPath;
+	}
+
 	public function init($repoName = '', $config = array())
 	{
 		$status = $this->run('git init')

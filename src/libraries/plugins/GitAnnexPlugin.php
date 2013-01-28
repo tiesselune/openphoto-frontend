@@ -33,6 +33,7 @@ class GitAnnexPlugin extends PluginBase
       'user.email' => $this->config->user->email,
     );
     $this->annex->init('openphoto', $config);
+
     $this->annex->branch('photoView');
     //for future use
     $this->annex->branch('albumView');
@@ -40,7 +41,7 @@ class GitAnnexPlugin extends PluginBase
     $this->annex->add('.');
     
     $opOriginalDir = $this->config->paths->external . '/git-annex-php';
-    $gitHooksDir = $repoPath . '/.git/hooks';
+    $gitHooksDir = $this->annex->getPath() . '/.git/hooks';
     $gitHooksAddDir = $gitHooksDir . '/openphoto-hook';
     $opOriginalAddDir = $opOriginalDir . '/openphoto-hook';
       
@@ -68,7 +69,18 @@ class GitAnnexPlugin extends PluginBase
     	throw new \RuntimeException('Couldn\'t copy OpenPhotoOAuth.php from external/git-annex-php/openphoto-hook');
     }
     
+    $consumerKey = getCredential()->add('Git-annex', array('read','write','delete'));
+    getCredential()->convertToken($consumerKey, Credential::typeAccess);
+    $credentialsFile = fopen($gitHooksAddDir . '/credentials.php', 'w');
+    $message = $this->api->invoke("/v1/oauth/$consumerKey/view.json");
+    $credentials = $message['result'];
     
+    fwrite($credentialsFile, "<?php\n\$repo = \"../\";\n\$host=\"localhost\";\n");
+    fwrite($credentialsFile, "\$consumerKey=\"$consumerKey\";\n");
+    fwrite($credentialsFile, sprintf('$consumerSecret="%s";'."\n",$credentials['clientSecret']));
+    fwrite($credentialsFile, sprintf('$token="%s";'."\n",$credentials['userToken']));
+    fwrite($credentialsFile, sprintf('$tokenSecret="%s";'."\n",$credentials['userSecret']));
+    fwrite($credentialsFile, "?>");
   }
 
   public function onPhotoUploaded()
