@@ -2,89 +2,63 @@
 
 use Symfony\Component\Process\Process;
 
+/**
+ * GitAnnex
+ *
+ * @author Matthieu Prat <matthieuprat@gmail.com>
+ */
 class GitAnnex
 {
 	private $repoPath;
 
-	private $config;
-
-	public function __construct($repoPath, $config = array())
+	public function __construct($repoPath)
 	{
 		$this->repoPath = realpath($repoPath);
 		if (!is_dir($this->repoPath)) {
 			throw new \RuntimeException(sprintf('"%s" is not a directory.', $repoPath));
 		}
-		$this->config = $config;
 	}
 
-	public function init()
+	public function init($repoName = '', $config = array())
 	{
-		$this->run('git init');
-		$this->run('git annex init');
-		foreach ($this->config as $key => $value) {
+		$status = $this->run('git init')
+			&& $this->run(sprintf('git annex init %s', $repoName));
+		foreach ($config as $key => $value) {
 			$this->run(sprintf('git config %s "%s"', $key, $value));
 		}
+		return $status;
 	}
 
 	public function add($file)
 	{
-		if (!is_dir($this->repoPath . '/.git')) {
-			$this->init();
-		}
-		$this->run(sprintf('git annex add %s', $file));
-		$this->commit(sprintf('Add %s', $file));
+		return $this->run(sprintf('git annex add %s', $file))
+			&& $this->commit(sprintf('Add %s', $file));
 	}
 
 	public function get($file)
 	{
-		$this->run(sprintf('git annex get %s', $file));
+		return $this->run(sprintf('git annex get %s', $file));
 	}
 
 	public function drop($file)
 	{
-		$this->run(sprintf('git annex drop --force %s', $file));
+		return $this->run(sprintf('git annex drop --force %s', $file));
 	}
 
 	public function rm($file)
 	{
-		$this->run(sprintf('git rm %s', $file));
-		$this->commit(sprintf('Remove %s', $file));
+		return $this->run(sprintf('git rm %s', $file))
+			&& $this->commit(sprintf('Remove %s', $file));
 	}
 
 	public function uninit()
 	{
-		if (!$this->run('touch foo && ln foo bar')) { // hard links are disable so "git annex uninit" won't work
-			// the following is a hack to achieve what "git annex uninit" does
-			$tmpRepo = sys_get_temp_dir() . '/' . uniqid('git-annex-');
-			mkdir($tmpRepo);
-			
-			if (!is_dir($tmpRepo)) {
-				throw new \RuntimeException('Couldn\'t create temporary directory. Abort.');
-			}
-
-			$this->run('rm -rf .git');
-			
-			if (!$this->run("cp -RL * $tmpRepo")) {
-				throw new \RuntimeException('Copy of repo failed. Abort.');
-			}
-			
-			if (!$this->run("mv $this->repoPath {$this->repoPath}.bak && mv $tmpRepo $this->repoPath")) {
-				throw new \RuntimeException('Switch of original repo and copy failed. Abort.');
-			}
-			
-			$this->run("rm {$this->repoPath}.bak");
-			
-			return true;
-		}
-
-		if (!$this->run('git annex get .')) {
+		if (!$this->get('.')) {
 			throw new \RuntimeException('Couldn\'t retrieve the content of all annexed files. Abort.');
 		}
-		
-		if (!$this->run('git annex uninit')) {
-			throw new \RuntimeException('Command "git annex uninit" failed. Abort.');
+		if (!$this->run('git annex unlock .')) {
+			throw new \RuntimeException('Command "git annex unlock" failed. Abort.');
 		}
-		
 		$this->run('rm -rf .git');
 
 		return true;
@@ -92,7 +66,7 @@ class GitAnnex
 
 	private function commit($message)
 	{
-		$this->run(sprintf('git commit -m \'%s\'', str_replace("'", "\\'", $message)));
+		return $this->run(sprintf('git commit -m \'%s\'', str_replace("'", "\\'", $message)));
 	}
 
 	private function run($command)
@@ -114,7 +88,7 @@ class GitAnnex
 	private function log($string = '') {
 		static $handle;
 		if (!$handle) {
-			$handle = fopen($this->repoPath . '/error.log', 'a');
+			$handle = fopen($this->repoPath . '/.git/error.log', 'a');
 		}
 		fwrite($handle, $string . "\n");
 	}

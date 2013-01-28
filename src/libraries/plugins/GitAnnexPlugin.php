@@ -1,4 +1,5 @@
 <?php
+
 /**
  * GitAnnexPlugin
  *
@@ -11,27 +12,28 @@ class GitAnnexPlugin extends PluginBase
   public function __construct()
   {
     parent::__construct();
-    $repoPath = $this->config->localfs->fsRoot . '/original';
-    $config = array(
-      'user.name' => 'OpenPhoto',
-      'user.email' => $this->config->user->email,
-    );
-    $this->annex = new GitAnnex($repoPath, $config);
 
-    $pluginDir = sprintf('%s/plugins', $this->config->paths->userdata);
-    if (!is_dir($pluginDir)) {
-      mkdir($pluginDir);
+    $repoPath = $this->config->localfs->fsRoot . '/original';
+
+    if (!is_dir($repoPath)) {
+      mkdir($repoPath);
     }
-    $pluginInitFile = sprintf('%s/%s.%s.init', $pluginDir, $_SERVER['HTTP_HOST'], 'GitAnnex');
-    if (!is_file($pluginInitFile)) {
-      touch($pluginInitFile);
+
+    $this->annex = new GitAnnex($repoPath);
+
+    if (!$this->isInitialized()) {
       $this->init();
     }
   }
 
   private function init()
   {
-    
+    $config = array(
+      'user.name' => 'OpenPhoto',
+      'user.email' => $this->config->user->email,
+    );
+    $this->annex->init('openphoto', $config);
+    $this->annex->add('.');
   }
 
   public function onPhotoUploaded()
@@ -53,8 +55,10 @@ class GitAnnexPlugin extends PluginBase
     $this->annex->rm($photo);
   }
 
-  public function onDeactivate() {
+  public function onDeactivate()
+  {
     $this->annex->uninit();
+    unlink($this->getPluginInitFileName());
   }
 
   private function getPhotoPath()
@@ -73,5 +77,27 @@ class GitAnnexPlugin extends PluginBase
     }
 
     return $matches['path'];
+  }
+
+  private function isInitialized()
+  {
+    $initFileName = $this->getPluginInitFileName();
+
+    if (is_file($initFileName)) {
+      return true;
+    }
+
+    if (!is_dir(dirname($initFileName))) {
+      mkdir(dirname($initFileName));
+    }
+
+    touch($initFileName);
+
+    return false;
+  }
+
+  private function getPluginInitFileName()
+  {
+    return sprintf('%s/plugins/%s.%s.init', $this->config->paths->userdata, $_SERVER['HTTP_HOST'], 'GitAnnex');
   }
 }
