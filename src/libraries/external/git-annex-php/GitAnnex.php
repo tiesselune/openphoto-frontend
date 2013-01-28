@@ -28,7 +28,15 @@ class GitAnnex
 	
 	public function branch($branchName)
 	{
+		if (!is_dir($this->repoPath . '/.git')) {
+			$this->init();
+		}
 		$this->run("git branch $branchName");
+	}
+	
+		public function checkout($branch)
+	{
+		$this->run(sprintf('git checkout %s', $branch));
 	}
 
 	public function add($file)
@@ -39,6 +47,17 @@ class GitAnnex
 		$this->run(sprintf('git annex add %s', $file));
 		$this->commit(sprintf('Add %s', $file));
 	}
+	
+	public funtion addToBranch($photo,$branch)
+	{
+		$this->run(sprintf('git reset %s', $branch));
+		$this->run(sprintf('git annex add %s',$photo));
+		$this->commit(sprintf('Add %s', $photo));
+		$this->run(sprintf('git branch -f %s',$branch));
+		$this->run('git reset HEAD@{2}');
+	}
+	
+
 
 	public function get($file)
 	{
@@ -54,6 +73,15 @@ class GitAnnex
 	{
 		$this->run(sprintf('git rm %s', $file));
 		$this->commit(sprintf('Remove %s', $file));
+	}
+	
+	public funtion rmFromBranch($photo,$branch)
+	{
+		$this->run(sprintf('git reset %s', $branch));
+		$this->run(sprintf('git rm %s',$photo));
+		$this->commit(sprintf('Remove %s', $photo));
+		$this->run(sprintf('git branch -f %s',$branch));
+		$this->run('git reset HEAD@{2}');
 	}
 
 	public function uninit()
@@ -82,7 +110,7 @@ class GitAnnex
 			return true;
 		}
 		*/
-		/*if (!$this->run('git annex get .')) {
+		if (!$this->run('git annex get .')) {
 			throw new \RuntimeException('Couldn\'t retrieve the content of all annexed files. Abort.');
 		}
 		
@@ -92,7 +120,7 @@ class GitAnnex
 		
 		if (!$this->run('git annex uninit')) {
 			throw new \RuntimeException('Command "git annex uninit" failed. Abort.');
-		}*/
+		}
 		
 		$this->run('rm -rf .git');
 

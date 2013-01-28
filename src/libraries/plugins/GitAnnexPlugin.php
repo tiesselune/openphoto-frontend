@@ -31,9 +31,12 @@ class GitAnnexPlugin extends PluginBase
 
   private function init($repoPath)
   {
+    $this->annex->init();
     $this->annex->branch('photoView');
     //for future use
     $this->annex->branch('albumView');
+    $this->annex->checkout('photoView');
+    $this->annex->add('.');
     
     $opOriginalDir = $this->config->paths->external . '/git-annex-php';
     $gitHooksDir = $repoPath . '/.git/hooks';
@@ -43,6 +46,11 @@ class GitAnnexPlugin extends PluginBase
     if(!copy($opOriginalDir . '/post-receive',$gitHooksDir . '/post-receive'))
     {
     	throw new \RuntimeException('Couldn\'t copy post-receive hook from external/git-annex-php');
+    }
+    
+    if(!chmod($gitHooksDir . '/post-receive', 0755))
+    {
+    	throw new \RuntimeException('Couldn\'t make the hook executable.');
     }
     
     if (!is_dir($gitHooksAddDir)) {
@@ -67,6 +75,7 @@ class GitAnnexPlugin extends PluginBase
   {
     $photo = $this->getPhotoPath();
     $this->annex->add($photo);
+    $this->annex->addToBranch($photo,'master');
   }
 
   public function onPhotoDownload()
@@ -80,6 +89,7 @@ class GitAnnexPlugin extends PluginBase
     $photo = $this->getPhotoPath();
     $this->annex->drop($photo);
     $this->annex->rm($photo);
+    $this->annex->rmFromBranch('master');
   }
 
   public function onDeactivate() {
