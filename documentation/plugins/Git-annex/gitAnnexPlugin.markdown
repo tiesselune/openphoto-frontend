@@ -44,6 +44,7 @@ From your server, configure git to be usable as a git server, replacing `myuser`
 To make cloning easier, add a symbolic link to your actual repository, replacing the path with the real path to your original directory in your photo directory (chosen at setup):
 
 	sudo ln -s ~git/photo.git path/to/your/photo/directory/original
+	sudo chown -r git:git ~git/photo.git
 	
 By default, it will be `/var/www/server.com/src/html/photos/original`, or wherever you placed your open-photo root followed by `/src/html/photos/original`
 	
