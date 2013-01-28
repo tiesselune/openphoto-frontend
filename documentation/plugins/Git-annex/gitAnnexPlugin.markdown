@@ -45,6 +45,8 @@ To make cloning easier, add a symbolic link to your actual repository, replacing
 
 	sudo ln -s ~git/photo.git path/to/your/photo/directory/original
 	
+By default, it will be `/var/www/server.com/src/html/photos/original`, or wherever you placed your open-photo root followed by `/src/html/photos/original`
+	
 Now come back to your client and run:
 
 	git clone git@server.com:photo.git
