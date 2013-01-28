@@ -8,7 +8,7 @@ Git-annex allows you to manage the storage of your photos so that they are, or *
 
 ## Installation of the plugin
 
-1. Install git-core and git-annex on your server. *Git-annex is available for most of the main linux distributions and for mac.*
+1. Install git-core and git-annex on your server, and make sure it is set up with a Local file-system backend. *Git-annex is available for most of the main linux distributions and for mac.*
 
 2. Just click the `Manage` button on the top of the status bar, then choose `Applications`.
 
@@ -40,6 +40,10 @@ From your server, configure git to be usable as a git server, replacing `myuser`
 	sudo chown -R git:git /home/git/.ssh
 	sudo chmod 700 !$
 	sudo chmod 600 /home/git/.ssh/*
+	
+To make cloning easier, add a symbolic link to your actual repository, replacing the path with the real path to your original directory in your photo directory (chosen at setup):
+
+	sudo ln -s ~git/photo.git path/to/your/photo/directory/original
 	
 Now come back to your client and run:
 
