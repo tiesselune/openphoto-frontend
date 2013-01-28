@@ -82,17 +82,17 @@ class GitAnnex
 			return true;
 		}
 		*/
-		if (!$this->run('git annex get .')) {
+		/*if (!$this->run('git annex get .')) {
 			throw new \RuntimeException('Couldn\'t retrieve the content of all annexed files. Abort.');
 		}
 		
-		if (!$this->run('git annex unlock ./*')) {
+		if (!$this->run('git annex unlock .')) {
 			throw new \RuntimeException('Couldn\'t replace content of all symlinks with their actual content. Abort.');
 		}
 		
 		if (!$this->run('git annex uninit')) {
 			throw new \RuntimeException('Command "git annex uninit" failed. Abort.');
-		}
+		}*/
 		
 		$this->run('rm -rf .git');
 
