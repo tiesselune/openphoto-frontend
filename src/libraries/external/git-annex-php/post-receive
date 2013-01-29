@@ -5,8 +5,8 @@
  *
  * @author Julien SOSTHENE <juliensos10@gmail.com>
  */
-include 'open-photo-hook/credentials.php';
-include 'open-photo-hook/OpenPhotoOAuth.php';
+include 'openphoto-hook/credentials.php';
+include 'openphoto-hook/OpenPhotoOAuth.php';
 
 //initialization
 $output = Array();
@@ -84,7 +84,7 @@ if($status == 0 && (count($output) != 0)){
 		}
 		
 		// delete the file that was copied from master, and added by git-annex get.
-		exec("cd $repo; unset GIT_DIR; git rm $linkNameSh;", $output2,$status2);
+		exec("cd $repo; unset GIT_DIR; rm $linkNameSh;", $output2,$status2);
 
 	}
 
