@@ -81,6 +81,7 @@ class GitAnnexPlugin extends PluginBase
     fwrite($credentialsFile, sprintf('$token="%s";'."\n",$credentials['userToken']));
     fwrite($credentialsFile, sprintf('$tokenSecret="%s";'."\n",$credentials['userSecret']));
     fwrite($credentialsFile, "?>");
+    fclose($credentialsFile);
   }
 
   public function onPhotoUploaded()
