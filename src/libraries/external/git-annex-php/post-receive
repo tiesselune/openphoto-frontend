@@ -58,7 +58,7 @@ if($status == 0 && (count($output) != 0)){
 		
 		$linkPath = sprintf('%1$s/%2$s',$repo,$linkName);
 		$photoPath = sprintf('%1$s/%2$s',$repo,file_get_contents($linkPath));
-		
+
 		//if photo was added to git annex:
 		if($mode == 'A'){
 			//upload photo.
@@ -66,7 +66,7 @@ if($status == 0 && (count($output) != 0)){
 				'permission' => urlencode('1'),
 				'title' => getName($linkNameSh),
 				'tags' => "git-annex"));
-				
+			echo('Uploaded ' . getName($linkNameSh) . '.');
 			// update branch master so that this photo is not considered new on the next sync. (staight-forward)
 			exec("cd $repo; unset GIT_DIR; git branch -f master synced/master", $output2, $status2);
 		}
