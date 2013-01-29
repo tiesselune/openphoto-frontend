@@ -43,14 +43,19 @@ From your server, configure git to be usable as a git server, replacing `myuser`
 	
 To make cloning easier, add a symbolic link to your actual repository, replacing the path with the real path to your original directory in your photo directory (chosen at setup):
 
-	sudo ln -s ~git/photo.git path/to/your/photo/directory/original
-	sudo chown -R git:git ~git/photo.git
+	sudo ln -s path/to/your/photo/directory/original ~git/photo.git
+	sudo chgrp -R git ~git/photo.git/
+	sudo chmod -R ug+rw ~git/photo.git/
 	
-By default, it will be `/var/www/server.com/src/html/photos/original`, or wherever you placed your open-photo root followed by `/src/html/photos/original`
+By default, it will be `/var/www/server.com/src/html/photos/original`, or wherever you placed your file system host (for test purposes, on `vagrant`, don't configure your photos repository in the vagrant shared folder, because it won't support file permission/group changes or symbolic links.)
+	
+Add the Apache user to the `git` group for openphoto to add web-uploaded photos:
+
+	sudo usermod -G git www-data
 	
 Now come back to your client and run:
 
-	git clone git@server.com:photo.git
+	git clone git@server.com:photo.git -b master
 	
 And that's it.
 
