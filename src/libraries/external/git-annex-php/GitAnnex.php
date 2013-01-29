@@ -26,9 +26,9 @@ class GitAnnex
 
 	public function init($repoName = '', $config = array())
 	{
-		$status = $this->run('git init')
-			&& $this->run(sprintf('git annex init %s', $repoName));
-		foreach ($config as $key => $value) {
+		$this->run('git init --shared=0777');
+		$this->run('git annex init open-photo');
+		foreach ($this->config as $key => $value) {
 			$this->run(sprintf('git config %s "%s"', $key, $value));
 		}
 		$this->run('git commit -m "Initial git commit" --allow-empty');
@@ -53,11 +53,11 @@ class GitAnnex
 	
 	public function addToBranch($photo,$branch)
 	{
-		$this->run(sprintf('git reset %s', $branch));
+		/*$this->run(sprintf('git reset %s', $branch));
 		$this->run(sprintf('git annex add %s',$photo));
 		$this->commit(sprintf('Add %s', $photo));
 		$this->run(sprintf('git branch -f %s',$branch));
-		$this->run('git reset HEAD@{2}');
+		$this->run('git reset HEAD@{2}');*/
 	}
 	
 
@@ -79,11 +79,11 @@ class GitAnnex
 	
 	public function rmFromBranch($photo,$branch)
 	{
-		$this->run(sprintf('git reset %s', $branch));
+		/*$this->run(sprintf('git reset %s', $branch));
 		$this->run(sprintf('git rm %s',$photo));
 		$this->commit(sprintf('Remove %s', $photo));
 		$this->run(sprintf('git branch -f %s',$branch));
-		$this->run('git reset HEAD@{2}');
+		$this->run('git reset HEAD@{2}');*/
 	}
 
 	public function uninit()
