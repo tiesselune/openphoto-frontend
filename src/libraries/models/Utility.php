@@ -116,6 +116,11 @@ class Utility
     return $this->licenses;
   }
 
+  public function getPath()
+  {
+    return $_SERVER['REDIRECT_URL'];
+  }
+
   public function dateLong($ts, $write = true)
   {
     if(empty($ts))
@@ -311,6 +316,13 @@ class Utility
       return $this->returnValue(($int != 1 ? 's' : ''), $write);
     else
       return $this->returnValue(($int != 1 ? "{$word}s" : $word), $write);
+  }
+
+  public function selectPlural($int, $singularForm, $pluralForm, $write = true)
+  {
+    $singularForm = $this->safe($singularForm, false);
+    $pluralForm = $this->safe($pluralForm, false);
+    return $this->returnValue(($int != 1 ? $pluralForm : $singularForm), $write);
   }
 
   public function posessive($noun, $write = true)

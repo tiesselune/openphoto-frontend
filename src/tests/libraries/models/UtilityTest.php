@@ -1,10 +1,4 @@
 <?php
-class EpiRoute
-{
-  const httpGet = 'GET';
-  const httpPost = 'POST';
-}
-
 class UtilityTest extends PHPUnit_Framework_TestCase
 {
   public function setUp()
@@ -232,6 +226,18 @@ RES;
 
     $res = $this->utility->plural(2, 'word', false);
     $this->assertEquals('words', $res, 'plural for word with 2 incorrect');
+  }
+
+  public function testSelectPlural()
+  {
+    $res = $this->utility->selectPlural(0, 'was', 'were', false);
+    $this->assertEquals('were', $res, 'plural for word with 0 selected incorrectly');
+
+    $res = $this->utility->selectPlural(1, 'was', 'were', false);
+    $this->assertEquals('was', $res, 'plural for word with 1 selected incorrectly');
+
+    $res = $this->utility->selectPlural(2, 'was', 'were', false);
+    $this->assertEquals('were', $res, 'plural for word with 2 selected incorrectly');
   }
 
   public function testReturnValue()

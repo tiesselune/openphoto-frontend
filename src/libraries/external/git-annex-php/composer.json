@@ -1,0 +1,16 @@
+{
+    "name": "matthieuprat/git-annex-php",
+    "description": "PHP API for git-annex",
+    "require": {
+        "symfony/process": "2.1.*"
+    },
+    "authors": [
+        {
+            "name": "Matthieu Prat",
+            "email": "matthieuprat@gmail.com"
+        }
+    ],
+    "autoload": {
+      "psr-0": { "GitAnnex": "" }
+    }
+}
