@@ -39,7 +39,7 @@ echo "===================================================="
 echo ""
 echo ""
 
-apt-get install --assume-yes --quiet php5-dev php5-imagick exiftran
+apt-get install --assume-yes --quiet php5-dev php5-imagick exiftran git-annex
 a2enmod deflate
 a2enmod expires
 a2enmod headers

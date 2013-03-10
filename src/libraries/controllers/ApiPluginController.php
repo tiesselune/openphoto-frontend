@@ -77,8 +77,10 @@ class ApiPluginController extends ApiBaseController
         {
           foreach($plugins as $key => $thisPlugin)
           {
-            if($plugin == $thisPlugin)
+            if($plugin == $thisPlugin) {
+              $this->plugin->invoke('onDeactivate');
               unset($plugins[$key]);
+            }
           }
         }
         break;

@@ -55,6 +55,10 @@ class PluginBase extends BaseModel
 
   public function onPhotoUploaded() {}
 
+  public function onPhotoDownload() {}
+
+  public function onPhotoDeleted() {}
+
   public function renderHead() { }
 
   public function renderBody() { }
@@ -64,6 +68,8 @@ class PluginBase extends BaseModel
   public function renderPhotoUploaded() {}
   
   public function renderFooter() { }
+
+  public function onDeactivate() {}
 
   public function routeHandler($route)
   {

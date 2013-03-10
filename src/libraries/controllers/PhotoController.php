@@ -95,6 +95,9 @@ class PhotoController extends BaseController
       $photo = $photoResp['result'];
       if($photoResp['code'] === 200)
       {
+        $this->plugin->setData('photo', $photo);
+        $this->plugin->invoke('onPhotoDownload');
+
         // Photo::download returns false on failure
         // If no failure assume success and die()
         if($this->photo->download($photo, $isAttachment))
